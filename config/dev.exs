@@ -6,4 +6,4 @@
 # We make no guarantees that this code is fit for any purpose.
 # Visit http://www.pragmaticprogrammer.com/titles/wmecto for more book information.
 #---
-use Mix.Config
+import Config
