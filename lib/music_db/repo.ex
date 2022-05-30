@@ -15,5 +15,8 @@ defmodule MusicDB.Repo do
     MusicDB.Repo.__adapter__ == Ecto.Adapters.Postgres
   end
 
-end
+  def count(table) do
+    aggregate(table, :count, :id)
+  end
 
+end
