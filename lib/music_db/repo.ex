@@ -19,4 +19,7 @@ defmodule MusicDB.Repo do
     aggregate(table, :count, :id)
   end
 
+  defmacro lower(arg) do
+    quote do: fragment("lower(?)", unquote(arg))
+  end
 end
