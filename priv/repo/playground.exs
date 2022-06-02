@@ -58,8 +58,8 @@ defmodule Playground do
 
   def title_only(query), do: from a in query, select: a.title
 
-  def validate_birth_date_in_the_past(changeset, field) do
-    validate_change(changeset, :birth_date, fn _field, value ->
+  def validate_in_the_past(changeset, field) do
+    validate_change(changeset, field, fn _field, value ->
         cond do
           is_nil(value) -> []
           Date.compare(value, Date.utc_today()) == :lt -> []
@@ -85,7 +85,7 @@ defmodule Playground do
     changeset =
       %Artist{}
       |> cast(params, [:name, :birth_date])
-      |> validate_birth_date_in_the_past(:birth_date)
+      |> validate_in_the_past(:birth_date)
 
       changeset.errors
 
@@ -109,8 +109,22 @@ defmodule Playground do
 
         case Repo.insert(changeset) do
           {:ok, _genre} -> IO.puts("Success!")
-          {:error, changeset} -> changeset.errors
+          {:error, changeset} -> IO.inspect(changeset.errors)
         end
+
+        form = %{artist_name: :string, album_title: :string,
+        artist_birth_date: :date, album_release_date: :date,
+        genre: :string}
+
+        params = %{"artist_name" => "Ella Fitzgerald", "album_title" => "",
+          "artist_birth_date" => "", "album_release_date" => "",
+          "genre" => ""}
+
+          changeset =
+            {%{}, form}
+            |> cast(params, Map.keys(form))
+            |> validate_in_the_past(:artist_birth_date)
+            |> validate_in_the_past(:album_release_date)
   end
 end
 
