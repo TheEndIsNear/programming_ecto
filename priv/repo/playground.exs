@@ -58,6 +58,16 @@ defmodule Playground do
 
   def title_only(query), do: from a in query, select: a.title
 
+  def validate_birth_date_in_the_past(changeset, field) do
+    validate_change(changeset, :birth_date, fn _field, value ->
+        cond do
+          is_nil(value) -> []
+          Date.compare(value, Date.utc_today()) == :lt -> []
+          true -> [{field, "must be in the past"}]
+        end
+    end)
+  end
+
   def play do
     ###############################################
     #
@@ -71,6 +81,36 @@ defmodule Playground do
     |> title_only()
     |> Repo.all()
 
+    params = %{"name" => "Theolonius Monk", "birth_date" => "2117-10-10"}
+    changeset =
+      %Artist{}
+      |> cast(params, [:name, :birth_date])
+      |> validate_birth_date_in_the_past(:birth_date)
+
+      changeset.errors
+
+      from(g in Genre)
+      |> where([g], g.name == ^"bebop")
+      |> Repo.one()
+      |> case do
+         nil -> :noop
+         genre -> Repo.delete(genre)
+      end
+
+      Repo.insert!(%Genre{name: "bebop"})
+
+      params = %{"name" => "bebop"}
+      changeset =
+        %Genre{}
+        |> cast(params, [:name])
+        |> validate_required(:name)
+        |> validate_length(:name, min: 3)
+        |> unique_constraint(:name)
+
+        case Repo.insert(changeset) do
+          {:ok, _genre} -> IO.puts("Success!")
+          {:error, changeset} -> changeset.errors
+        end
   end
 end
 
