@@ -125,6 +125,44 @@ defmodule Playground do
             |> cast(params, Map.keys(form))
             |> validate_in_the_past(:artist_birth_date)
             |> validate_in_the_past(:album_release_date)
+            |> IO.inspect()
+
+            params = %{"name" => "Esperanza Spalding",
+              "albums" => [%{"title" => "Junjo"}]}
+            changeset =
+              %Artist{}
+              |> cast(params, [:name])
+              |> cast_assoc(:albums)
+              IO.inspect(changeset.changes)
+
+            artist = Repo.get_by(Artist, name: "Bill Evans")
+            |> Repo.preload(:albums)
+            IO.inspect(Enum.map(artist.albums, &({&1.id, &1.title})))
+
+            portrait = Repo.get_by(Album, title: "Portrait In Jazz")
+            kind_of_blue = Repo.get_by(Album, title: "Kind Of Blue")
+            params = %{"albums" =>
+              [
+                %{"title" => "Explorations"},
+                %{"title" => "Portrait in Jazz (remastered)", "id" => portrait.id},
+                %{"title" => "Kind Of Blue", "id" => kind_of_blue.id}
+              ]
+            }
+
+            {:ok, artist} =
+              artist
+              |> cast(params, [])
+              |> cast_assoc(:albums)
+              |> Repo.update()
+
+            IO.inspect(Enum.map(artist.albums, &({&1.id, &1.title})))
+
+            Repo.all(from a in Album, where: a.title == "Kind Of Blue")
+          |> Enum.map(&({&1.id, &1.title, &1.artist_id}))
+          |> IO.inspect()
+
+          Repo.all(from a in Album, where: a.title == "You Must Believe In Spring")
+          |> Enum.map(&({&1.id, &1.title, &1.artist_id}))
   end
 end
 

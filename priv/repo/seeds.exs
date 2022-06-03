@@ -189,7 +189,7 @@ Repo.insert! %Artist{
           index: 9
         }
       ]
-    }
+    },
   ]
 }
 

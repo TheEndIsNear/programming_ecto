@@ -1,5 +1,6 @@
 defmodule MusicDB.Album do
   use Ecto.Schema
+  import Ecto.Changeset
 
   schema "albums" do
     field(:title, :string)
@@ -9,5 +10,11 @@ defmodule MusicDB.Album do
     belongs_to(:artist, MusicDB.Artist)
 
     many_to_many(:genres, MusicDB.Genre, join_through: "albums_genres")
+  end
+
+  def changeset(album, params) do
+    album
+    |> cast(params, [:title])
+    |> validate_required([:title])
   end
 end
