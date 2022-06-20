@@ -163,7 +163,30 @@ defmodule Playground do
 
           Repo.all(from a in Album, where: a.title == "You Must Believe In Spring")
           |> Enum.map(&({&1.id, &1.title, &1.artist_id}))
+          |> IO.inspect()
+
+          cs =
+            %Artist{name: nil}
+            |> change()
+            |> validate_required([:name])
+          Repo.transaction(fn ->
+            case Repo.insert(cs) do
+              {:ok, _artist} -> IO.puts("Artist insert succeeded")
+              {:error, _value} -> Repo.rollback("Artist insert failed")
+            end
+            case Repo.insert(Log.changeset_for_insert(cs)) do
+              {:ok, _log} -> IO.puts("Log insert succeeded")
+              {:error, _value} -> Repo.rollback("Log insert failed")
+            end
+          end)
   end
+
+  artist = %Artist{name: "Johnny Hodgest"}
+  multi =
+    Multi.new()
+    |> Multi.insert(:artist, artist)
+    |> Multi.insert(:log, Log.changeset_for_insert(artist))
+    Repo.transaction(multi)
 end
 
 # add your test code to Playground.play above - this will execute it
